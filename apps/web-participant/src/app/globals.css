@@ -1,0 +1,19 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  color-scheme: light dark;
+}
+
+html,
+body {
+  height: 100%;
+}
+
+/* 모바일 터치 타깃 기본 크기 보장 */
+button,
+input,
+[role='button'] {
+  min-height: 44px;
+}

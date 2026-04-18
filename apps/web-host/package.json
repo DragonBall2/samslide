@@ -1,0 +1,31 @@
+{
+  "name": "@samslide/web-host",
+  "version": "0.0.0",
+  "private": true,
+  "description": "호스트/에디터 Next.js 앱",
+  "scripts": {
+    "build": "next build",
+    "dev": "next dev --port 3000",
+    "start": "next start --port 3000",
+    "typecheck": "tsc --noEmit",
+    "lint": "next lint",
+    "test": "vitest run --passWithNoTests"
+  },
+  "dependencies": {
+    "@samslide/types": "workspace:*",
+    "@samslide/ui": "workspace:*",
+    "next": "^15.1.0",
+    "react": "^19.0.0",
+    "react-dom": "^19.0.0"
+  },
+  "devDependencies": {
+    "@types/node": "^22.10.0",
+    "@types/react": "^19.0.0",
+    "@types/react-dom": "^19.0.0",
+    "autoprefixer": "^10.4.20",
+    "postcss": "^8.4.49",
+    "tailwindcss": "^3.4.17",
+    "typescript": "^5.7.0",
+    "vitest": "^2.1.0"
+  }
+}
