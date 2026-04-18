@@ -1,8 +1,45 @@
 # samslide 핸드오프 노트
 
-> 이 프로젝트는 **집 PC(Claude Code)** 와 **회사 PC(사내 코딩 에이전트)** 를 git 으로 오가며 개발한다.
-> 두 환경 모두에서 "다음에 무엇을 하면 되는지"가 명확하도록 이 문서와 커밋 메시지가 가장 중요한 핸드오프 매체다.
-> **규칙**: 작업 덩어리가 끝나면 이 문서의 §2·§3 을 반드시 갱신한 뒤 커밋한다.
+> 이 프로젝트는 **세 환경** 사이를 두 개의 GitHub(외부/사내)로 연결하며 개발·배포된다.
+> **규칙**: 작업 덩어리가 끝나면 이 문서의 §2·§3 을 반드시 갱신한 뒤 커밋·push 한다.
+
+## 0. 환경과 Git 흐름
+
+| 환경 | 도구 | 외부 GitHub | 사내 GitHub |
+|---|---|---|---|
+| 집 PC | Claude Code | push/pull | 접근 불가 |
+| 회사 업무용 PC | 사내 코딩 에이전트 | **pull 만** | push/pull |
+| 사내 서버 (배포) | 배포 파이프라인 | **접근 불가** | push/pull |
+
+- 외부 GitHub: `https://github.com/DragonBall2/samslide`
+- 사내 GitHub: 회사 업무PC 에서 URL 확인 후 `internal` 리모트로 등록
+
+### 기본 흐름 (단방향)
+```
+[집]  git push origin main
+         ↓ (외부 GitHub)
+[회사 업무PC]  git pull origin main
+               git push internal main
+                 ↓ (사내 GitHub)
+[사내 서버]  git pull internal main → 배포
+```
+
+### 회사 업무PC 에서 첫 셋업
+```bash
+git clone https://github.com/DragonBall2/samslide.git
+cd samslide
+git remote add internal <사내-GitHub-URL>
+git push internal main       # 사내 미러 초기화
+# 이후 세션 마다: pull origin → 작업 → push internal
+```
+
+### 역방향(회사→집) 주의
+업무용 PC 에서 외부 GitHub 에 push 가 **안 된다**. 회사에서 발생한 변경을 집으로 되돌릴 필요가 있으면:
+- `git format-patch` 로 패치 파일을 만들어 다른 채널(메일 등)로 집에 전달
+- 또는 집은 해당 작업을 건드리지 않고 독립 브랜치에서 다른 일만 진행
+
+**집 세션에서 절대 하지 말 것**: `git push --force origin main`. 회사 변경이 앞서 있을 수 있음을 항상 전제.
+
 
 ## 1. 환경 셋업 (새 체크아웃 기준)
 
@@ -92,3 +129,5 @@ pnpm --filter @samslide/web-participant dev                                # :30
 - API 는 **인메모리 저장소**이므로 재시작 시 모든 데이터 소실. DB 도입 전까지는 의도된 동작.
 - `@samslide/types` 를 수정했으면 반드시 `pnpm --filter @samslide/types build` 를 먼저 돌려야 다른 앱에서 반영됨 (NestJS 는 컴파일된 `dist/` 를 require).
 - 포트 3000/3001/3002 가 이전 세션 좀비 프로세스로 잡혀있을 수 있음. `netstat -ano | grep :3001` → `taskkill /F /PID <pid>` (Windows) / `lsof -i :3001` → `kill -9 <pid>` (Unix).
+- **사내 서버는 외부 인터넷 접근 불가**. `pnpm install` 이 사내 npm 미러를 사용할 수 있도록 `.npmrc` 또는 `PNPM_REGISTRY` env 설정이 사내 환경에서 필요할 수 있음. 외부 CDN 에 런타임 의존하는 코드(폰트, 이미지, 스크립트) 도입 금지.
+- 외부 GitHub 에 올릴 때 **사내 전용 정보(내부 URL, 사내 시스템 이름 등) 가 포함되지 않도록** 항상 점검. 사내 GitHub 로만 가도 되는 설정은 `.env.local` 같이 커밋되지 않는 파일에 둘 것.
