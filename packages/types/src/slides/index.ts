@@ -23,10 +23,21 @@ const SlideUnion = z.discriminatedUnion('kind', [
   QnaSlideSchema,
 ]);
 
-export const SlideSchema = SlideUnion.superRefine((slide, ctx) => {
+/**
+ * kind 별 교차 필드 검증. SlideSchema 와 CreateSlideRequestSchema 양쪽에서 공유한다.
+ * discriminated union 은 top-level refinement 를 허용하지 않기 때문에 이렇게 분리한다.
+ */
+export function applyCrossFieldValidation(
+  slide: { kind: string; [k: string]: unknown },
+  ctx: z.RefinementCtx,
+): void {
   if (slide.kind === 'multiple_choice') {
-    validateMultipleChoice(slide, ctx);
+    validateMultipleChoice(slide as Parameters<typeof validateMultipleChoice>[0], ctx);
   }
+}
+
+export const SlideSchema = SlideUnion.superRefine((slide, ctx) => {
+  applyCrossFieldValidation(slide, ctx);
 });
 export type Slide = z.infer<typeof SlideSchema>;
 

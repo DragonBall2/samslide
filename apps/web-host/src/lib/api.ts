@@ -1,9 +1,13 @@
 import type {
   ApiError,
   CreateDeckRequest,
+  CreateSlideRequest,
   Deck,
   DeckListResponse,
+  ReorderSlidesRequest,
+  Slide,
   UpdateDeckRequest,
+  UpdateSlideRequest,
 } from '@samslide/types';
 import { API_BASE_URL } from './env';
 
@@ -74,6 +78,30 @@ export const api = {
     return request<void>(`/decks/${id}`, {
       method: 'DELETE',
       expectJson: false,
+    });
+  },
+  addSlide(deckId: string, input: CreateSlideRequest): Promise<Slide> {
+    return request<Slide>(`/decks/${deckId}/slides`, {
+      method: 'POST',
+      body: JSON.stringify(input),
+    });
+  },
+  updateSlide(deckId: string, slideId: string, input: UpdateSlideRequest): Promise<Slide> {
+    return request<Slide>(`/decks/${deckId}/slides/${slideId}`, {
+      method: 'PATCH',
+      body: JSON.stringify(input),
+    });
+  },
+  deleteSlide(deckId: string, slideId: string): Promise<void> {
+    return request<void>(`/decks/${deckId}/slides/${slideId}`, {
+      method: 'DELETE',
+      expectJson: false,
+    });
+  },
+  reorderSlides(deckId: string, input: ReorderSlidesRequest): Promise<{ slides: Slide[] }> {
+    return request<{ slides: Slide[] }>(`/decks/${deckId}/slides/reorder`, {
+      method: 'POST',
+      body: JSON.stringify(input),
     });
   },
 };

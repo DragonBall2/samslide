@@ -1,6 +1,7 @@
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
 import { api, ApiClientError } from '@/lib/api';
+import { DeckEditor } from './DeckEditor';
 
 export const dynamic = 'force-dynamic';
 
@@ -37,35 +38,7 @@ export default async function DeckDetailPage({
         <Chip label={`defaultTimeLimit: ${deck.settings.defaultTimeLimit}s`} />
       </div>
 
-      <section className="mt-8">
-        <h2 className="text-lg font-semibold">슬라이드</h2>
-        {deck.slides.length === 0 ? (
-          <div className="mt-3 rounded-xl border border-dashed border-slate-300 bg-slate-50 p-8 text-center text-sm text-slate-500 dark:border-slate-700 dark:bg-slate-900">
-            <p className="font-medium">아직 슬라이드가 없습니다.</p>
-            <p className="mt-1 text-xs">
-              M1 후속 스프린트에서 슬라이드 에디터가 추가됩니다. (질문 5종 + 콘텐츠 슬라이드)
-            </p>
-          </div>
-        ) : (
-          <ul className="mt-3 space-y-2">
-            {deck.slides.map((slide) => (
-              <li
-                key={slide.id}
-                className="rounded-xl border border-slate-200 bg-white p-4 dark:border-slate-800 dark:bg-slate-900"
-              >
-                <p className="font-mono text-xs text-slate-500">#{slide.order} · {slide.kind}</p>
-              </li>
-            ))}
-          </ul>
-        )}
-      </section>
-
-      <section className="mt-10">
-        <h2 className="text-lg font-semibold">Raw JSON</h2>
-        <pre className="mt-3 overflow-auto rounded-xl border border-slate-200 bg-slate-50 p-4 text-xs dark:border-slate-800 dark:bg-slate-950">
-{JSON.stringify(deck, null, 2)}
-        </pre>
-      </section>
+      <DeckEditor deck={deck} />
     </main>
   );
 }
