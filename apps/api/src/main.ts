@@ -9,11 +9,21 @@ async function bootstrap(): Promise<void> {
   });
   app.enableShutdownHooks();
 
+  const corsOrigins = (process.env.CORS_ORIGINS ?? 'http://localhost:3000,http://localhost:3002')
+    .split(',')
+    .map((s) => s.trim())
+    .filter(Boolean);
+  app.enableCors({
+    origin: corsOrigins,
+    credentials: true,
+  });
+
   const port = Number(process.env.PORT ?? 3001);
   await app.listen(port);
 
   const logger = new Logger('Bootstrap');
   logger.log(`samslide-api listening on http://localhost:${port}`);
+  logger.log(`CORS origins: ${corsOrigins.join(', ')}`);
 }
 
 bootstrap().catch((err) => {

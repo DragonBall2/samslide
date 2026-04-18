@@ -17,6 +17,10 @@
     "./deck": {
       "types": "./dist/deck.d.ts",
       "import": "./dist/deck.js"
+    },
+    "./api": {
+      "types": "./dist/api/index.d.ts",
+      "import": "./dist/api/index.js"
     }
   },
   "files": ["dist"],
