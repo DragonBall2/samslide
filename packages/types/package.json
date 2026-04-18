@@ -14,9 +14,9 @@
       "types": "./dist/slides/index.d.ts",
       "import": "./dist/slides/index.js"
     },
-    "./deck": {
-      "types": "./dist/deck.d.ts",
-      "import": "./dist/deck.js"
+    "./presentation": {
+      "types": "./dist/presentation.d.ts",
+      "import": "./dist/presentation.js"
     },
     "./api": {
       "types": "./dist/api/index.d.ts",

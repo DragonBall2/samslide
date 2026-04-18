@@ -96,7 +96,7 @@ samslide/
      ▼                 ▼                   ▼
 ┌─────────────────────────────┐     ┌──────────┐
 │        PostgreSQL           │     │  MinIO   │
-│ (decks/questions/responses) │     │ (media)  │
+│ (presentations/slides/responses) │ │ (media)  │
 └─────────────────────────────┘     └──────────┘
 ```
 
@@ -110,20 +110,21 @@ samslide/
 ## 4. 데이터 모델 (핵심)
 
 ```
-Deck 1---N Question 0---N MediaAsset
+Presentation 1---N Slide 0---N MediaAsset
  │
- │                   Session N---1 Deck
+ │                   Session N---1 Presentation
  └────────────────── Session 1---N Participant
                      Session 1---N Response
 ```
 
 ### 4.1 테이블 요약
 
-**decks**
+**presentations**
 - `id, owner_id, title, description, settings_json, created_at, updated_at`
 
 **slides** (다형성 — 질문 슬라이드 + 콘텐츠 슬라이드 통합 테이블)
-- `id, deck_id, order, kind, config_json, media_asset_id, tags[]`
+- `id, presentation_id, order, kind, config_json, media_asset_id, tags[]`
+- `(presentation_id, order)` unique 인덱스
 - `kind`: `content` / `multiple_choice` / `true_false` / `short_answer` / `word_cloud` / `qna`
 - `config_json`에 종류별 상세 저장 (콘텐츠 슬라이드는 `title`·`body_markdown`·`layout`, 질문은 `options`·`answer`·`time_limit`·`points` 등). Zod 스키마로 검증.
 - 단일 테이블로 두어 **렌더 순서·재정렬이 단순**하고, 일괄 입력 스키마와 자연스럽게 매핑된다.
@@ -132,7 +133,8 @@ Deck 1---N Question 0---N MediaAsset
 - `id, owner_id, type(image/video), storage_key, mime, size_bytes, duration_sec, checksum, created_at`
 
 **sessions** (실행 인스턴스)
-- `id, deck_id, host_id, join_code(unique), status(lobby/running/ended), started_at, ended_at`
+- `id, presentation_id, host_id, join_code(unique), status(lobby/running/ended), started_at, ended_at`
+- Session 은 Presentation 한 개에 속하지만 Presentation 이 삭제되어도 보존 (aft audit)
 
 **participants**
 - `id, session_id, nickname, user_id(nullable: SSO 사용 시), joined_at, left_at`
@@ -153,12 +155,12 @@ Deck 1---N Question 0---N MediaAsset
 
 ### 5.1 REST (호스트·에디터)
 ```
-POST   /api/decks                       # 덱 생성
-GET    /api/decks/:id                   # 덱 조회
-PATCH  /api/decks/:id                   # 덱 수정
-POST   /api/decks/:id/questions         # 질문 추가
-POST   /api/decks/:id/questions/bulk    # 일괄 JSON 주입
-POST   /api/decks/:id/import            # CSV/XLSX/ZIP 업로드 → 워커 큐잉
+POST   /api/presentations                       # 프레젠테이션 생성
+GET    /api/presentations/:id                   # 프레젠테이션 조회
+PATCH  /api/presentations/:id                   # 프레젠테이션 수정
+POST   /api/presentations/:id/slides            # 슬라이드 추가
+POST   /api/presentations/:id/slides/bulk       # 일괄 JSON 주입
+POST   /api/presentations/:id/import            # CSV/XLSX/ZIP 업로드 → 워커 큐잉
 GET    /api/imports/:job_id             # 임포트 진행상황 / 에러 리포트
 POST   /api/media                       # 미디어 업로드 (프리사인드)
 POST   /api/sessions                    # 세션 시작 → join_code 반환
@@ -189,9 +191,9 @@ GET    /api/sessions/:id/report         # 리포트 CSV
 ## 6. 프론트엔드 구조
 
 ### 6.1 호스트/에디터 앱 (`web-host`)
-- `/decks` — 덱 목록
-- `/decks/:id/edit` — 에디터 (슬라이드 썸네일 + 편집 패널)
-- `/decks/:id/import` — 일괄 입력 (드롭존, 미리보기, 에러 인라인 수정)
+- `/presentations` — 프레젠테이션 목록
+- `/presentations/:id` — 에디터 (슬라이드 추가/편집/삭제/순서변경)
+- `/presentations/:id/import` — 일괄 입력 (드롭존, 미리보기, 에러 인라인 수정)
 - `/sessions/:id/present` — 발표자 뷰 (프로젝터용)
 - `/sessions/:id/control` — 발표자 제어 패널 (다음/공개/종료)
 - `/sessions/:id/report` — 세션 결과
@@ -275,7 +277,7 @@ CREATED → LOBBY → RUNNING (per-question) → ENDED
 | 마일스톤 | 기간 | 산출물 |
 |---|---|---|
 | **M0: 셋업** | 주 1–2 | 모노레포, CI/CD, **SSO(OIDC) 실연동**, 기본 스켈레톤, 디자인 토큰 |
-| **M1: 에디터 MVP** | 주 3–7 | 덱 CRUD, 질문 유형 5종 + **일반 콘텐츠 슬라이드**(텍스트/이미지), 에디터 내 미리보기 |
+| **M1: 에디터 MVP** | 주 3–7 | 프레젠테이션 CRUD, 질문 유형 5종 + **일반 콘텐츠 슬라이드**(텍스트/이미지), 에디터 내 미리보기 |
 | **M2: 실시간 세션** | 주 8–10 | WS 엔진, 코드 입장, 호스트/참가자 앱, 집계 차트 |
 | **M3: 일괄 입력** | 주 11–13 | CSV/XLSX/ZIP 파서, 미디어 업로드, 미리보기 UI, 에러 인라인 수정 |
 | **M4: 리포트** | 주 14–15 | 세션 종료 리포트, CSV 내보내기, 관측/로깅 |
@@ -283,9 +285,9 @@ CREATED → LOBBY → RUNNING (per-question) → ENDED
 
 ### 9.1 스프린트별 핵심 이정표
 - **Sprint 1 (M0)**: 첫 배포 + **사내 SSO로 실제 로그인** 성공
-- **Sprint 3~4 (M1 종료)**: 에디터로 만든 덱(질문+콘텐츠 슬라이드 혼합)을 **수동 모드**로 발표 가능
+- **Sprint 3~4 (M1 종료)**: 에디터로 만든 프레젠테이션(질문+콘텐츠 슬라이드 혼합)을 **수동 모드**로 발표 가능
 - **Sprint 5 (M2 종료)**: 처음부터 끝까지 **실제 세션** 실행 가능 (내부 드레스 리허설)
-- **Sprint 7 (M3 종료)**: XLSX 한 파일로 **50문항 덱 자동 생성** 시연
+- **Sprint 7 (M3 종료)**: XLSX 한 파일로 **50문항 프레젠테이션 자동 생성** 시연
 - **Sprint 9 (GA)**: 사내 GA + 타운홀에서 첫 실사용
 
 ---

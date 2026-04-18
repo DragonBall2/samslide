@@ -2,7 +2,7 @@
 
 import { useRouter } from 'next/navigation';
 import { useState } from 'react';
-import type { CreateSlideRequest, Deck, Slide, SlideKind } from '@samslide/types';
+import type { CreateSlideRequest, Presentation, Slide, SlideKind } from '@samslide/types';
 import { SlideKindSchema } from '@samslide/types';
 import { api, ApiClientError } from '@/lib/api';
 import { SLIDE_KIND_LABELS, SlideForm } from './slide-forms';
@@ -13,9 +13,13 @@ type Mode =
   | { t: 'adding'; kind: SlideKind }
   | { t: 'editing'; slide: Slide };
 
-export function DeckEditor({ deck: initialDeck }: { deck: Deck }) {
+export function PresentationEditor({
+  presentation: initialPresentation,
+}: {
+  presentation: Presentation;
+}) {
   const router = useRouter();
-  const [deck, setDeck] = useState(initialDeck);
+  const [presentation, setPresentation] = useState(initialPresentation);
   const [mode, setMode] = useState<Mode>({ t: 'view' });
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -31,8 +35,8 @@ export function DeckEditor({ deck: initialDeck }: { deck: Deck }) {
     setBusy(true);
     setError(null);
     try {
-      const slide = await api.addSlide(deck.id, body);
-      setDeck({ ...deck, slides: [...deck.slides, slide] });
+      const slide = await api.addSlide(presentation.id, body);
+      setPresentation({ ...presentation, slides: [...presentation.slides, slide] });
       resetMode();
       router.refresh();
     } catch (e) {
@@ -46,10 +50,10 @@ export function DeckEditor({ deck: initialDeck }: { deck: Deck }) {
     setBusy(true);
     setError(null);
     try {
-      const slide = await api.updateSlide(deck.id, slideId, body);
-      setDeck({
-        ...deck,
-        slides: deck.slides.map((s) => (s.id === slideId ? slide : s)),
+      const slide = await api.updateSlide(presentation.id, slideId, body);
+      setPresentation({
+        ...presentation,
+        slides: presentation.slides.map((s) => (s.id === slideId ? slide : s)),
       });
       resetMode();
       router.refresh();
@@ -61,13 +65,14 @@ export function DeckEditor({ deck: initialDeck }: { deck: Deck }) {
   }
 
   async function handleDelete(slide: Slide) {
-    if (!confirm(`슬라이드 #${slide.order + 1} (${slide.kind}) 을(를) 삭제하시겠습니까?`)) return;
+    if (!confirm(`슬라이드 #${slide.order + 1} (${slide.kind}) 을(를) 삭제하시겠습니까?`))
+      return;
     setBusy(true);
     try {
-      await api.deleteSlide(deck.id, slide.id);
+      await api.deleteSlide(presentation.id, slide.id);
       // 서버가 재정렬하므로 다시 가져온다
-      const fresh = await api.getDeck(deck.id);
-      setDeck(fresh);
+      const fresh = await api.getPresentation(presentation.id);
+      setPresentation(fresh);
       router.refresh();
     } catch (e) {
       alert(e instanceof ApiClientError ? e.message : '삭제 실패');
@@ -77,7 +82,7 @@ export function DeckEditor({ deck: initialDeck }: { deck: Deck }) {
   }
 
   async function handleMove(slide: Slide, delta: -1 | 1) {
-    const sorted = [...deck.slides].sort((a, b) => a.order - b.order);
+    const sorted = [...presentation.slides].sort((a, b) => a.order - b.order);
     const idx = sorted.findIndex((s) => s.id === slide.id);
     const target = idx + delta;
     if (target < 0 || target >= sorted.length) return;
@@ -88,8 +93,8 @@ export function DeckEditor({ deck: initialDeck }: { deck: Deck }) {
     const slideIds = reordered.map((s) => s.id);
     setBusy(true);
     try {
-      const res = await api.reorderSlides(deck.id, { slideIds });
-      setDeck({ ...deck, slides: res.slides });
+      const res = await api.reorderSlides(presentation.id, { slideIds });
+      setPresentation({ ...presentation, slides: res.slides });
       router.refresh();
     } catch (e) {
       alert(e instanceof ApiClientError ? e.message : '순서 변경 실패');
@@ -98,12 +103,12 @@ export function DeckEditor({ deck: initialDeck }: { deck: Deck }) {
     }
   }
 
-  const sortedSlides = [...deck.slides].sort((a, b) => a.order - b.order);
+  const sortedSlides = [...presentation.slides].sort((a, b) => a.order - b.order);
 
   return (
     <section className="mt-8">
       <header className="flex items-center justify-between">
-        <h2 className="text-lg font-semibold">슬라이드 ({deck.slides.length})</h2>
+        <h2 className="text-lg font-semibold">슬라이드 ({presentation.slides.length})</h2>
         {mode.t === 'view' && (
           <button
             type="button"
@@ -132,7 +137,11 @@ export function DeckEditor({ deck: initialDeck }: { deck: Deck }) {
             ))}
           </div>
           <div className="mt-3 text-right">
-            <button type="button" onClick={resetMode} className="text-sm text-slate-500 underline">
+            <button
+              type="button"
+              onClick={resetMode}
+              className="text-sm text-slate-500 underline"
+            >
               취소
             </button>
           </div>

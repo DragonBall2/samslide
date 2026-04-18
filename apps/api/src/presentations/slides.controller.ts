@@ -19,52 +19,53 @@ import {
   type UpdateSlideRequest,
 } from '@samslide/types';
 import { ZodValidationPipe } from '../common/zod-validation.pipe.js';
-import { DecksRepository } from './decks.repository.js';
+import { PresentationsRepository } from './presentations.repository.js';
 
-@Controller('decks/:deckId/slides')
+@Controller('presentations/:presentationId/slides')
 export class SlidesController {
-  constructor(private readonly repo: DecksRepository) {}
+  constructor(private readonly repo: PresentationsRepository) {}
 
   @Post()
   create(
-    @Param('deckId', new ParseUUIDPipe()) deckId: string,
+    @Param('presentationId', new ParseUUIDPipe()) presentationId: string,
     @Body(new ZodValidationPipe(CreateSlideRequestSchema)) body: CreateSlideRequest,
   ): Slide {
-    const slide = this.repo.addSlide(deckId, body);
-    if (!slide) throw new NotFoundException(`deck not found: ${deckId}`);
+    const slide = this.repo.addSlide(presentationId, body);
+    if (!slide) throw new NotFoundException(`presentation not found: ${presentationId}`);
     return slide;
   }
 
   @Patch(':slideId')
   update(
-    @Param('deckId', new ParseUUIDPipe()) deckId: string,
+    @Param('presentationId', new ParseUUIDPipe()) presentationId: string,
     @Param('slideId', new ParseUUIDPipe()) slideId: string,
     @Body(new ZodValidationPipe(UpdateSlideRequestSchema)) body: UpdateSlideRequest,
   ): Slide {
-    const slide = this.repo.updateSlide(deckId, slideId, body);
-    if (!slide) throw new NotFoundException(`slide not found: ${deckId}/${slideId}`);
+    const slide = this.repo.updateSlide(presentationId, slideId, body);
+    if (!slide)
+      throw new NotFoundException(`slide not found: ${presentationId}/${slideId}`);
     return slide;
   }
 
   @Delete(':slideId')
   @HttpCode(204)
   remove(
-    @Param('deckId', new ParseUUIDPipe()) deckId: string,
+    @Param('presentationId', new ParseUUIDPipe()) presentationId: string,
     @Param('slideId', new ParseUUIDPipe()) slideId: string,
   ): void {
-    const ok = this.repo.removeSlide(deckId, slideId);
-    if (!ok) throw new NotFoundException(`slide not found: ${deckId}/${slideId}`);
+    const ok = this.repo.removeSlide(presentationId, slideId);
+    if (!ok) throw new NotFoundException(`slide not found: ${presentationId}/${slideId}`);
   }
 
   @Post('reorder')
   reorder(
-    @Param('deckId', new ParseUUIDPipe()) deckId: string,
+    @Param('presentationId', new ParseUUIDPipe()) presentationId: string,
     @Body(new ZodValidationPipe(ReorderSlidesRequestSchema)) body: ReorderSlidesRequest,
   ): { slides: Slide[] } {
-    const slides = this.repo.reorderSlides(deckId, body.slideIds);
+    const slides = this.repo.reorderSlides(presentationId, body.slideIds);
     if (!slides) {
       throw new NotFoundException(
-        `reorder failed: deck ${deckId} not found, or slideIds did not exactly match existing slides`,
+        `reorder failed: presentation ${presentationId} not found, or slideIds did not exactly match existing slides`,
       );
     }
     return { slides };

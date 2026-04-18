@@ -1,2 +1,2 @@
-export * from './decks.js';
+export * from './presentations.js';
 export * from './slides.js';

@@ -4,15 +4,15 @@ import { useRouter } from 'next/navigation';
 import { useState } from 'react';
 import { api, ApiClientError } from '@/lib/api';
 
-export function DeleteDeckButton({ id, title }: { id: string; title: string }) {
+export function DeletePresentationButton({ id, title }: { id: string; title: string }) {
   const router = useRouter();
   const [busy, setBusy] = useState(false);
 
   async function onDelete() {
-    if (!confirm(`덱 "${title}"을(를) 삭제하시겠습니까?`)) return;
+    if (!confirm(`프레젠테이션 "${title}"을(를) 삭제하시겠습니까?`)) return;
     setBusy(true);
     try {
-      await api.deleteDeck(id);
+      await api.deletePresentation(id);
       router.refresh();
     } catch (err) {
       const message =

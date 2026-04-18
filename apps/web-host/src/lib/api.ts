@@ -1,12 +1,12 @@
 import type {
   ApiError,
-  CreateDeckRequest,
+  CreatePresentationRequest,
   CreateSlideRequest,
-  Deck,
-  DeckListResponse,
+  Presentation,
+  PresentationListResponse,
   ReorderSlidesRequest,
   Slide,
-  UpdateDeckRequest,
+  UpdatePresentationRequest,
   UpdateSlideRequest,
 } from '@samslide/types';
 import { API_BASE_URL } from './env';
@@ -56,50 +56,57 @@ async function request<T>(
 }
 
 export const api = {
-  listDecks(): Promise<DeckListResponse> {
-    return request<DeckListResponse>('/decks');
+  listPresentations(): Promise<PresentationListResponse> {
+    return request<PresentationListResponse>('/presentations');
   },
-  getDeck(id: string): Promise<Deck> {
-    return request<Deck>(`/decks/${id}`);
+  getPresentation(id: string): Promise<Presentation> {
+    return request<Presentation>(`/presentations/${id}`);
   },
-  createDeck(input: CreateDeckRequest): Promise<Deck> {
-    return request<Deck>('/decks', {
+  createPresentation(input: CreatePresentationRequest): Promise<Presentation> {
+    return request<Presentation>('/presentations', {
       method: 'POST',
       body: JSON.stringify(input),
     });
   },
-  updateDeck(id: string, patch: UpdateDeckRequest): Promise<Deck> {
-    return request<Deck>(`/decks/${id}`, {
+  updatePresentation(id: string, patch: UpdatePresentationRequest): Promise<Presentation> {
+    return request<Presentation>(`/presentations/${id}`, {
       method: 'PATCH',
       body: JSON.stringify(patch),
     });
   },
-  deleteDeck(id: string): Promise<void> {
-    return request<void>(`/decks/${id}`, {
+  deletePresentation(id: string): Promise<void> {
+    return request<void>(`/presentations/${id}`, {
       method: 'DELETE',
       expectJson: false,
     });
   },
-  addSlide(deckId: string, input: CreateSlideRequest): Promise<Slide> {
-    return request<Slide>(`/decks/${deckId}/slides`, {
+  addSlide(presentationId: string, input: CreateSlideRequest): Promise<Slide> {
+    return request<Slide>(`/presentations/${presentationId}/slides`, {
       method: 'POST',
       body: JSON.stringify(input),
     });
   },
-  updateSlide(deckId: string, slideId: string, input: UpdateSlideRequest): Promise<Slide> {
-    return request<Slide>(`/decks/${deckId}/slides/${slideId}`, {
+  updateSlide(
+    presentationId: string,
+    slideId: string,
+    input: UpdateSlideRequest,
+  ): Promise<Slide> {
+    return request<Slide>(`/presentations/${presentationId}/slides/${slideId}`, {
       method: 'PATCH',
       body: JSON.stringify(input),
     });
   },
-  deleteSlide(deckId: string, slideId: string): Promise<void> {
-    return request<void>(`/decks/${deckId}/slides/${slideId}`, {
+  deleteSlide(presentationId: string, slideId: string): Promise<void> {
+    return request<void>(`/presentations/${presentationId}/slides/${slideId}`, {
       method: 'DELETE',
       expectJson: false,
     });
   },
-  reorderSlides(deckId: string, input: ReorderSlidesRequest): Promise<{ slides: Slide[] }> {
-    return request<{ slides: Slide[] }>(`/decks/${deckId}/slides/reorder`, {
+  reorderSlides(
+    presentationId: string,
+    input: ReorderSlidesRequest,
+  ): Promise<{ slides: Slide[] }> {
+    return request<{ slides: Slide[] }>(`/presentations/${presentationId}/slides/reorder`, {
       method: 'POST',
       body: JSON.stringify(input),
     });

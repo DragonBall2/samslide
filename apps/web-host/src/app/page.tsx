@@ -13,10 +13,10 @@ export default function HomePage() {
 
       <div className="mt-8">
         <Link
-          href="/decks"
+          href="/presentations"
           className="inline-flex items-center rounded-xl bg-brand-500 px-5 py-2.5 text-sm font-semibold text-white transition hover:bg-brand-700"
         >
-          덱 관리로 이동 →
+          프레젠테이션 관리로 이동 →
         </Link>
       </div>
 

@@ -66,8 +66,8 @@ pnpm --filter @samslide/web-participant dev  # http://localhost:3002
 
 - ✅ 모노레포 + pnpm workspaces + Turbo
 - ✅ `@samslide/types` — Zod 슬라이드 스키마 6종 + API 요청 스키마 + 교차 검증 공유 + 단위 테스트 17건
-- ✅ `@samslide/api` — NestJS 11, `/health`, Deck CRUD, Slide CRUD + reorder, Zod 검증 파이프, CORS
-- ✅ `@samslide/web-host` — Next.js 15 + Tailwind, 덱 관리(생성·삭제), **6종 슬라이드 에디터** (추가·편집·삭제·순서변경)
+- ✅ `@samslide/api` — NestJS 11, `/health`, Presentation CRUD, Slide CRUD + reorder, Zod 검증 파이프, CORS
+- ✅ `@samslide/web-host` — Next.js 15 + Tailwind, 프레젠테이션 관리(생성·삭제), **6종 슬라이드 에디터** (추가·편집·삭제·순서변경)
 - ✅ `@samslide/web-participant` — Next.js 15 + Tailwind, 코드 입장 화면 스텁
 - ✅ `@samslide/bulk-parser`, `@samslide/ui` — 패키지 스텁
 - ✅ `pnpm turbo run build typecheck test` → 15/15 태스크 통과

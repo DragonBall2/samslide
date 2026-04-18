@@ -1,20 +1,20 @@
 import { describe, expect, it } from 'vitest';
 import {
-  CreateDeckRequestSchema,
+  CreatePresentationRequestSchema,
   CreateSlideRequestSchema,
   ReorderSlidesRequestSchema,
 } from '../src/index.js';
 
-describe('CreateDeckRequest', () => {
+describe('CreatePresentationRequest', () => {
   it('accepts minimal valid input', () => {
-    expect(CreateDeckRequestSchema.parse({ title: '테스트' })).toMatchObject({
+    expect(CreatePresentationRequestSchema.parse({ title: '테스트' })).toMatchObject({
       title: '테스트',
       description: '',
     });
   });
 
   it('rejects empty title', () => {
-    expect(CreateDeckRequestSchema.safeParse({ title: '' }).success).toBe(false);
+    expect(CreatePresentationRequestSchema.safeParse({ title: '' }).success).toBe(false);
   });
 });
 
